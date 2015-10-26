@@ -10,3 +10,5 @@
 8. Git
 9. 加载网络资源同时，如何使UICollectionView更流畅
 10. NSOperationQueue 多线程编程
+11. DGActivityIndicatorView 和 DOFavoriteButton 使用
+12. 自己实现使用UICollectionView 的 pull to refreash 
