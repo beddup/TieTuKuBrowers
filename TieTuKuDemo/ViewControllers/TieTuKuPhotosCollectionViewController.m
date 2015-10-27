@@ -102,6 +102,7 @@ NSString *const RandomPhotos = @"随便看看";
 
 
 -(void)configureCollectionView{
+
     [self configureCollectionViewLayout];
 
     //reused cell
@@ -316,38 +317,42 @@ NSString *const RandomPhotos = @"随便看看";
 }
 
 #pragma  mark - UIScrollViewDelegate
--(void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset{
 
+-(void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate{
 
-    if ([self.currentCategory[@"name"] isEqualToString:RandomPhotos]) {
-        return;
-    }
-    if ([self.currentCategory[@"name"] isEqualToString:MyFavorite]) {
+    if ([self.currentCategory[@"cid"] integerValue] < 0) {
         return;
     }
     if (self.pullToRefreshIndicator.hidden) {
         return;
     }
-
     CGPoint point = scrollView.contentOffset;
     if (point.y > CGRectGetMaxY(self.pullToRefreshIndicator.frame)+50 - CGRectGetHeight(scrollView.bounds)){
         // time to load more photos
+
         NSString *indexString=[@(self.maxPageIndex) stringValue];
         if (!self.dataTasks[indexString]) {
-
+            scrollView.contentInset = UIEdgeInsetsMake(0, 0, 150, 0); // make room for pull to refresh indicator
+            scrollView.contentSize = CGSizeMake(scrollView.contentSize.width, scrollView.contentSize.height +150);
             NSURLSessionDataTask *dataTask = [self.helper fetchPhotoURLsOfCategory:[self.currentCategory[@"cid"] integerValue] pageIndex:self.maxPageIndex+1 completionHandler:^(NSArray<NSString *> *urlStrings) {
-                    if (urlStrings.count < 30) {
-                        self.loadMoreLabel.hidden = YES;
-                        self.pullToRefreshIndicator.hidden = YES;
-                    }
-                    [self.URLStrings addObjectsFromArray:urlStrings];
-                    self.maxPageIndex++;
-                    [self.collectionView reloadData]; // image not fetched yet
-                    [self.dataTasks removeObjectForKey:indexString];
-                }];
+                if (urlStrings.count < 30) {
+                    self.loadMoreLabel.hidden = YES;
+                    self.pullToRefreshIndicator.hidden = YES;
+                }
+                [self.URLStrings addObjectsFromArray:urlStrings];
+                self.maxPageIndex++;
+                scrollView.contentInset = UIEdgeInsetsZero;
+                scrollView.contentOffset = CGPointMake(point.x, point.y+150);
+                [self.collectionView reloadData]; // image not fetched yet
+                [self.dataTasks removeObjectForKey:indexString];
+            }];
             [self.dataTasks setObject:dataTask forKey:indexString];
         }
     }
+
+}
+-(void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset{
+
 }
 #pragma mark - navigation
 //unwind
