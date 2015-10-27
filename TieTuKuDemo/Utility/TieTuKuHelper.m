@@ -19,14 +19,16 @@
 
 @implementation TieTuKuHelper
 
-+(instancetype)helper{
++(instancetype)helper
+{
     return [[[self class] alloc] init];
 }
 
--(instancetype)init{
+-(instancetype)init
+{
     self = [super init];
-    if (self) {
-
+    if (self)
+    {
         _HTTPSessionManager = [[AFHTTPSessionManager alloc]initWithBaseURL:[NSURL URLWithString:@"http://api.tietuku.com/v2/api"]];
 
         // configure the responseSerializer, because the data may be json or image
@@ -41,8 +43,8 @@
 }
 
 
--(NSURLSessionDataTask *)fetchTieTuKuCategoryWithCompletionHandler:(void (^)(NSArray<NSDictionary *> *categories))completionHandler{
-
+-(NSURLSessionDataTask *)fetchTieTuKuCategoryWithCompletionHandler:(void (^)(NSArray<NSDictionary *> *categories))completionHandler
+{
     NSString *urlString=[NSString stringWithFormat:@"getcatalog?key=%@&returntype=json",TieTuKuOpenKey];
 
     return [self.HTTPSessionManager GET:urlString
@@ -54,8 +56,8 @@
 
 }
 
--(NSURLSessionDataTask *)fetchRandomRecommendedPhotoURLWithCompletionHandler:(void (^)(NSArray<NSString *> *urlStrings))completionHandler{
-
+-(NSURLSessionDataTask *)fetchRandomRecommendedPhotoURLWithCompletionHandler:(void (^)(NSArray<NSString *> *urlStrings))completionHandler
+{
     NSString *urlString=[NSString stringWithFormat:@"getrandrec?key=%@&returntype=json",TieTuKuOpenKey];
 
    return  [self.HTTPSessionManager GET:urlString
@@ -71,23 +73,27 @@
 
 -(NSURLSessionDataTask *)fetchPhotoURLsOfCategory:(NSInteger)categoryID
                       pageIndex:(NSInteger)index
-              completionHandler:(void (^)(NSArray<NSString *> *urlStrings))completionHandler{
-
+              completionHandler:(void (^)(NSArray<NSString *> *urlStrings))completionHandler
+{
     NSString *urlString = nil;
     NSInteger pageIndex = index < 1 ? 1 : index;
 
-    if (categoryID > 0) {
+    if (categoryID > 0)
+    {
         urlString = [NSString stringWithFormat:@"getnewpic?key=%@&returntype=json&p=%d&cid=%d",TieTuKuOpenKey,pageIndex,categoryID];
-    }else{
+    }else
+    {
         urlString = [NSString stringWithFormat:@"getnewpic?key=%@&returntype=json&p=%d&cid=1",TieTuKuOpenKey,pageIndex];
     }
 
-   return [self.HTTPSessionManager GET:urlString parameters:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nonnull responseObject) {
+   return [self.HTTPSessionManager GET:urlString
+                            parameters:nil
+                               success:^(NSURLSessionDataTask * _Nonnull task, id  _Nonnull responseObject) {
 
-        NSArray *pics = [((NSDictionary *)responseObject) valueForKey:@"pic"];
-        completionHandler([pics valueForKey:@"linkurl"]);
-
-    } failure:nil];
+                                NSArray *pics = [((NSDictionary *)responseObject) valueForKey:@"pic"];
+                                completionHandler([pics valueForKey:@"linkurl"]);
+                                }
+                               failure:nil];
 }
 
 -(NSURLSessionDataTask *)fetchImageAtURLString:(NSString *)urlString

@@ -22,10 +22,12 @@
 @end
 
 @implementation TieTuKuCollectionViewCell
--(void)setImage:(UIImage *)image{
-    
+
+-(void)setImage:(UIImage *)image
+{
     _image=image;
-    if (image) {
+    if (image)
+    {
         [self.indicator stopAnimating];
         self.indicator.hidden = YES;
         self.favoriteButton.hidden = NO;
@@ -34,34 +36,37 @@
     [self layoutIfNeeded];
 }
 
--(void)setUrlString:(NSString *)urlString{
-    _urlString = urlString;
+-(void)setImageURLString:(NSString *)urlString
+{
+    _imageURLString = urlString;
 
     // check whether it is favorite
     self.favoriteButton.selected = [FavoritePhotos isFavorite:urlString];
 }
--(void)layoutSubviews{
 
+-(void)layoutSubviews
+{
     self.imageView.frame = self.bounds;
     self.indicator.center = CGPointMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds));
     self.favoriteButton.center = CGPointMake(CGRectGetMidX(self.bounds), CGRectGetMaxY(self.bounds)-30);
 }
 
--(void)prepareForReuse{
-
+-(void)prepareForReuse
+{
     [super prepareForReuse];
     self.image = nil;
     self.indicator.hidden = NO;
     [self.indicator startAnimating];
-
 }
+
 #pragma  mark - setup
--(void)awakeFromNib{
+-(void)awakeFromNib
+{
     [self setup];
 }
 
--(void)setup{
-
+-(void)setup
+{
     self.backgroundColor = [UIColor darkGrayColor];
 
     UIImageView *imageView = [[UIImageView alloc]init];
@@ -86,21 +91,26 @@
     [self addSubview:favoriteButton];
     self.favoriteButton = favoriteButton;
     self.favoriteButton.hidden = YES;
-
 }
--(void)changeFavorite:(DOFavoriteButton *)sender{
-    if (sender.selected) {
+
+-(void)changeFavorite:(DOFavoriteButton *)sender
+{
+    if (sender.selected)
+    {
         [sender deselect];
-        [FavoritePhotos removeFavoritePhoto:self.urlString];
-    }else{
+        [FavoritePhotos removeFavoritePhoto:self.imageURLString];
+    }else
+    {
         [sender select];
-        [FavoritePhotos insertFavoritePhoto:self.urlString];
+        [FavoritePhotos insertFavoritePhoto:self.imageURLString];
     }
 }
 
--(instancetype)initWithFrame:(CGRect)frame{
+-(instancetype)initWithFrame:(CGRect)frame
+{
     self=[super initWithFrame:frame];
-    if (self) {
+    if (self)
+    {
         [self setup];
     }
     return self;

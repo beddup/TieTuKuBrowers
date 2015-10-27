@@ -18,17 +18,15 @@
 
 @implementation TieTuKuImageViewController
 
--(void)viewDidLoad{
-
+-(void)viewDidLoad
+{
     [self configureScrollView];
-
     self.navigationController.hidesBarsOnSwipe=YES;
-
 }
 
 
-- (void)configureScrollView {
-
+- (void)configureScrollView
+{
     UIImageView *imageView = [[UIImageView alloc] init];
     imageView.image = self.image;
     [self.scrollView addSubview:imageView];
@@ -41,15 +39,17 @@
     self.scrollView.minimumZoomScale = 1;
     self.scrollView.maximumZoomScale = 2.0;
     self.scrollView.delegate = self;
-
 }
--(void)setImage:(UIImage *)image{
+
+-(void)setImage:(UIImage *)image
+{
     _image = image;
     self.imageView.image = image;
 }
 
 #pragma mark - ScrollViewDelegate
--(UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView{
+-(UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView
+{
     return self.imageView;
 }
 @end
