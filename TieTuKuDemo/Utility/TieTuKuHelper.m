@@ -28,9 +28,11 @@
     if (self) {
 
         _HTTPSessionManager = [[AFHTTPSessionManager alloc]initWithBaseURL:[NSURL URLWithString:@"http://api.tietuku.com/v2/api"]];
+
         // configure the responseSerializer, because the data may be json or image
         AFJSONResponseSerializer *jsonSerializer = [AFJSONResponseSerializer serializerWithReadingOptions:NSJSONReadingAllowFragments];
         AFImageResponseSerializer *imageSerializer = [AFImageResponseSerializer serializer];
+        
         AFCompoundResponseSerializer *compoundSerializer = [AFCompoundResponseSerializer compoundSerializerWithResponseSerializers:@[jsonSerializer,imageSerializer]];
         _HTTPSessionManager.responseSerializer = compoundSerializer;
 

@@ -333,7 +333,7 @@ NSString *const RandomPhotos = @"随便看看";
         NSString *indexString=[@(self.maxPageIndex) stringValue];
         if (!self.dataTasks[indexString]) {
             scrollView.contentInset = UIEdgeInsetsMake(0, 0, 150, 0); // make room for pull to refresh indicator
-            scrollView.contentSize = CGSizeMake(scrollView.contentSize.width, scrollView.contentSize.height +150);
+//            scrollView.contentSize = CGSizeMake(scrollView.contentSize.width, scrollView.contentSize.height +150);
             NSURLSessionDataTask *dataTask = [self.helper fetchPhotoURLsOfCategory:[self.currentCategory[@"cid"] integerValue] pageIndex:self.maxPageIndex+1 completionHandler:^(NSArray<NSString *> *urlStrings) {
                 if (urlStrings.count < 30) {
                     self.loadMoreLabel.hidden = YES;

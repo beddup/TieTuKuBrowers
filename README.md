@@ -1,5 +1,6 @@
 # TieTuKuBrowers
-根据贴图库api做的一个浏览图片的app，目的是iOS开发学习，如下
+根据贴图库api做的一个浏览图片的app，目的是iOS开发学习（在这里做了总结：http://www.cnblogs.com/beddup/p/4913434.html），如下
+
 1. 使用AFNetworking
 2. 使用UICollectionView, UICollectionViewCell
 3. CoreData
