@@ -19,7 +19,7 @@
  *
  *  @param completionHandler called when fetch completed;
  */
--(NSURLSessionDataTask *)fetchTieTuKuCategoryWithCompletionHandler:(void (^)(NSArray<NSDictionary *> *categories))completionHandler;
+-(NSURLSessionDataTask *)fetchTieTuKuCategoryWithCompletionHandler:(void (^)(NSArray<NSDictionary *> *categories,NSError* error))completionHandler;
 
 /**
  *  fetch random Recommended photos url, 30 photos
@@ -27,7 +27,7 @@
  *  @param completionHandler called when fetch completed
  */
 
--(NSURLSessionDataTask *)fetchRandomRecommendedPhotoURLWithCompletionHandler:(void (^)(NSArray<NSString *> *urlStrings))completionHandler;
+-(NSURLSessionDataTask *)fetchRandomRecommendedPhotoURLWithCompletionHandler:(void (^)(NSArray<NSString *> *urlStrings,NSError* error))completionHandler;
 
 /**
  *  fetch photos url at some page of some category(NOTE:each page have 30 photos urls)
@@ -38,7 +38,7 @@
  */
 -(NSURLSessionDataTask *)fetchPhotoURLsOfCategory:(NSInteger)categoryID
                                         pageIndex:(NSInteger)index
-                                completionHandler:(void (^)(NSArray<NSString *> *urlStrings))completionHandler;
+                                completionHandler:(void (^)(NSArray<NSString *> *urlStrings,NSError* error))completionHandler;
 
 /**
  *  fetch photo at url
@@ -47,7 +47,7 @@
  *  @param completionHandler called when fetch completed
  */
 -(NSURLSessionDataTask *)fetchImageAtURLString:(NSString *)urlString
-                              completionHandle:(void (^)(UIImage * image))completionHandler;
+                              completionHandle:(void (^)(UIImage * image,NSError* error))completionHandler;
 
 
 @end

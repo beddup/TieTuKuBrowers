@@ -58,7 +58,13 @@ NSString *const TTKRandomPhotos = @"随便看看";
 
     self.helper = [TieTuKuHelper helper];
     // Fetch the categories first
-    [self.helper fetchTieTuKuCategoryWithCompletionHandler:^(NSArray<NSDictionary *> *categories) {
+    [self.helper fetchTieTuKuCategoryWithCompletionHandler:^(NSArray<NSDictionary *> *categories,NSError* error) {
+
+        if (error) {
+            [self showCannotGetPhonesAlert];
+            return;
+        }
+
         NSDictionary *favorite = @{@"cid":@(-2),@"name":TTKMyFavorite};
         NSDictionary *random = @{@"cid":@(-1),@"name":TTKRandomPhotos};
 
@@ -71,8 +77,10 @@ NSString *const TTKRandomPhotos = @"随便看看";
         [orderedCategory insertObject:favorite atIndex:0];
 
         self.categories = [orderedCategory copy];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.navigationItem.rightBarButtonItem.enabled = YES;
+        });
 
-        self.navigationItem.rightBarButtonItem.enabled = YES;
     }];
 
     // in default, 30 random photos will be displayed
@@ -128,6 +136,12 @@ NSString *const TTKRandomPhotos = @"随便看看";
     layout.minimumContentHeight = 80.0;
 }
 
+-(void)showCannotGetPhonesAlert{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        UIAlertView* alert = [[UIAlertView alloc]initWithTitle:@"无法获取图片" message:nil delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil];
+        [alert show];
+    });
+}
 #pragma mark - Reset
 
 /**
@@ -215,32 +229,46 @@ NSString *const TTKRandomPhotos = @"随便看看";
                                                                               target:self action:@selector(changeRandomPhotos:)];
         self.navigationItem.leftBarButtonItem = changeRandomPhotos;
 
-        [self.helper fetchRandomRecommendedPhotoURLWithCompletionHandler:^(NSArray<NSString *> *urlStrings){
+        [self.helper fetchRandomRecommendedPhotoURLWithCompletionHandler:^(NSArray<NSString *> *urlStrings,NSError* error){
+
+            if (error) {
+                [self showCannotGetPhonesAlert];
+                return;
+            }
 
             self.URLStrings = [NSMutableOrderedSet orderedSetWithArray:urlStrings];
-            self.pullToRefreshIndicator.hidden = YES;
-            [self.collectionView reloadData]; // image not fetched yet
+            dispatch_async(dispatch_get_main_queue(), ^{
+                self.pullToRefreshIndicator.hidden = YES;
+                [self.collectionView reloadData]; // image not fetched yet
+            });
 
         }];
     }else
     {
-        self.pullToRefreshIndicator.hidden = NO;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.pullToRefreshIndicator.hidden = NO;
+        });
         [self.helper fetchPhotoURLsOfCategory:[self.currentCategory[@"cid"] integerValue]
                                     pageIndex:1
-                            completionHandler:^(NSArray<NSString *> *urlStrings) {
-
-                                if (urlStrings.count >= 30)
-                                {
-                                    // no more photos
-                                    self.loadMoreLabel.hidden = NO;
+                            completionHandler:^(NSArray<NSString *> *urlStrings,NSError* error) {
+                                if (error) {
+                                    [self showCannotGetPhonesAlert];
+                                    return;
                                 }
-                                else
-                                {
-                                    self.pullToRefreshIndicator.hidden = YES;
-                                }
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    if (urlStrings.count >= 30)
+                                    {
+                                        // no more photos
+                                        self.loadMoreLabel.hidden = NO;
+                                    }
+                                    else
+                                    {
+                                        self.pullToRefreshIndicator.hidden = YES;
+                                    }
 
-                                [self.URLStrings addObjectsFromArray:urlStrings];
-                                [self.collectionView reloadData]; // image not fetched yet
+                                    [self.URLStrings addObjectsFromArray:urlStrings];
+                                    [self.collectionView reloadData]; // image not fetched yet
+                                });
 
         }];
     }
@@ -251,12 +279,16 @@ NSString *const TTKRandomPhotos = @"随便看看";
 
     [self clear];
     self.pullToRefreshIndicator.hidden = NO;
-    [self.helper fetchRandomRecommendedPhotoURLWithCompletionHandler:^(NSArray<NSString *> *urlStrings) {
-
-        self.pullToRefreshIndicator.hidden = YES;
-        self.URLStrings = [NSMutableOrderedSet orderedSetWithArray:urlStrings];
-        [self.collectionView reloadData]; // image not fetched yet
-
+    [self.helper fetchRandomRecommendedPhotoURLWithCompletionHandler:^(NSArray<NSString *> *urlStrings,NSError* error) {
+        if (error) {
+            [self showCannotGetPhonesAlert];
+            return;
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.pullToRefreshIndicator.hidden = YES;
+            self.URLStrings = [NSMutableOrderedSet orderedSetWithArray:urlStrings];
+            [self.collectionView reloadData]; // image not fetched yet
+        });
     }];
 }
 
@@ -287,13 +319,20 @@ NSString *const TTKRandomPhotos = @"随便看看";
         {
             // fetch image
             NSURLSessionDataTask *datatask =  [self.helper fetchImageAtURLString:urlString
-                                                                completionHandle:^(UIImage *image) {
+                                                                completionHandle:^(UIImage *image,NSError* error) {
+                    if (error) {
+                        [self showCannotGetPhonesAlert];
+                        return;
+                    }
 
                     if ([[collectionView indexPathsForVisibleItems] containsObject:indexPath])
                     {
                         // if the cell is still visible, get it and give it an image
-                        TieTuKuCollectionViewCell *theCell = (TieTuKuCollectionViewCell *)[collectionView cellForItemAtIndexPath:indexPath];
-                        theCell.image = image;
+                        dispatch_async(dispatch_get_main_queue(), ^{
+
+                            TieTuKuCollectionViewCell *theCell = (TieTuKuCollectionViewCell *)[collectionView cellForItemAtIndexPath:indexPath];
+                            theCell.image = image;
+                        });
                     }
                    [self.fetchedImages setObject:image forKey:urlString];
                    // when download done, remove task
@@ -363,19 +402,25 @@ NSString *const TTKRandomPhotos = @"随便看看";
 //            scrollView.contentSize = CGSizeMake(scrollView.contentSize.width, scrollView.contentSize.height +150);
             NSURLSessionDataTask *dataTask = [self.helper fetchPhotoURLsOfCategory:[self.currentCategory[@"cid"] integerValue]
                                                                          pageIndex:self.maxPageIndex+1
-                                                                 completionHandler:^(NSArray<NSString *> *urlStrings) {
+                                                                 completionHandler:^(NSArray<NSString *> *urlStrings,NSError* error) {
+                                                                     if (error) {
+                                                                         [self showCannotGetPhonesAlert];
+                                                                         return;
+                                                                     }
+                                                                     dispatch_async(dispatch_get_main_queue(), ^{
 
-                                                                    if (urlStrings.count < 30)
-                                                                    {
-                                                                        self.loadMoreLabel.hidden = YES;
-                                                                        self.pullToRefreshIndicator.hidden = YES;
-                                                                    }
-                                                                    [self.URLStrings addObjectsFromArray:urlStrings];
-                                                                    self.maxPageIndex++;
-                                                                    scrollView.contentInset = UIEdgeInsetsZero;
-                                                                    scrollView.contentOffset = CGPointMake(point.x, point.y+150);
-                                                                    [self.collectionView reloadData]; // image not fetched yet
-                                                                    [self.dataTasks removeObjectForKey:indexString];
+                                                                        if (urlStrings.count < 30)
+                                                                        {
+                                                                            self.loadMoreLabel.hidden = YES;
+                                                                            self.pullToRefreshIndicator.hidden = YES;
+                                                                        }
+                                                                        [self.URLStrings addObjectsFromArray:urlStrings];
+                                                                        self.maxPageIndex++;
+                                                                        scrollView.contentInset = UIEdgeInsetsZero;
+                                                                        scrollView.contentOffset = CGPointMake(point.x, point.y+150);
+                                                                        [self.collectionView reloadData]; // image not fetched yet
+                                                                        [self.dataTasks removeObjectForKey:indexString];
+                                                                     });
                                                                 }];
             [self.dataTasks setObject:dataTask forKey:indexString];
         }

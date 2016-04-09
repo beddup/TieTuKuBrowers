@@ -43,68 +43,86 @@
 }
 
 
--(NSURLSessionDataTask *)fetchTieTuKuCategoryWithCompletionHandler:(void (^)(NSArray<NSDictionary *> *categories))completionHandler
+-(NSURLSessionDataTask *)fetchTieTuKuCategoryWithCompletionHandler:(void (^)(NSArray<NSDictionary *> *categories,NSError* error))completionHandler
 {
     NSString *urlString=[NSString stringWithFormat:@"getcatalog?key=%@&returntype=json",TieTuKuOpenKey];
 
     return [self.HTTPSessionManager GET:urlString
                       parameters:nil
                          success:^(NSURLSessionDataTask * _Nonnull task, id  _Nonnull responseObject) {
-                             completionHandler(responseObject);
+                             if ([responseObject isKindOfClass:[NSArray class]]) {
+                                 completionHandler(responseObject,nil);
+                             }
                          }
-                         failure:nil];
+                        failure:^(NSURLSessionDataTask * _Nonnull task, NSError * _Nonnull error) {
+                            completionHandler(nil,error);
+                        }];
 
 }
 
--(NSURLSessionDataTask *)fetchRandomRecommendedPhotoURLWithCompletionHandler:(void (^)(NSArray<NSString *> *urlStrings))completionHandler
+-(NSURLSessionDataTask *)fetchRandomRecommendedPhotoURLWithCompletionHandler:(void (^)(NSArray<NSString *> *urlStrings,NSError* error))completionHandler
 {
     NSString *urlString=[NSString stringWithFormat:@"getrandrec?key=%@&returntype=json",TieTuKuOpenKey];
 
    return  [self.HTTPSessionManager GET:urlString
                       parameters:nil
                          success:^(NSURLSessionDataTask * _Nonnull task, id  _Nonnull responseObject) {
-                             NSArray *randomPhotos = (NSArray *)responseObject;
+
+                             if ([responseObject isKindOfClass:[NSArray class]]) {
+                                 NSArray *randomPhotos = (NSArray *)responseObject;
+                                 completionHandler([randomPhotos valueForKey:@"linkurl"],nil);
+                             }
                              // randomPhotos is an array of dictionay which has a linkurl key which value is the Photo url
-                             completionHandler([randomPhotos valueForKey:@"linkurl"]);
+
                          }
-                         failure:nil];
+                         failure:^(NSURLSessionDataTask * _Nonnull task, NSError * _Nonnull error) {
+                             completionHandler(nil,error);
+                         }];
 
 }
 
 -(NSURLSessionDataTask *)fetchPhotoURLsOfCategory:(NSInteger)categoryID
                       pageIndex:(NSInteger)index
-              completionHandler:(void (^)(NSArray<NSString *> *urlStrings))completionHandler
+              completionHandler:(void (^)(NSArray<NSString *> *urlStrings,NSError* error))completionHandler
 {
     NSString *urlString = nil;
     NSInteger pageIndex = index < 1 ? 1 : index;
 
     if (categoryID > 0)
     {
-        urlString = [NSString stringWithFormat:@"getnewpic?key=%@&returntype=json&p=%d&cid=%d",TieTuKuOpenKey,pageIndex,categoryID];
+        urlString = [NSString stringWithFormat:@"getnewpic?key=%@&returntype=json&p=%ld&cid=%ld",TieTuKuOpenKey,(long)pageIndex,(long)categoryID];
     }else
     {
-        urlString = [NSString stringWithFormat:@"getnewpic?key=%@&returntype=json&p=%d&cid=1",TieTuKuOpenKey,pageIndex];
+        urlString = [NSString stringWithFormat:@"getnewpic?key=%@&returntype=json&p=%ld&cid=1",TieTuKuOpenKey,(long)pageIndex];
     }
 
    return [self.HTTPSessionManager GET:urlString
                             parameters:nil
                                success:^(NSURLSessionDataTask * _Nonnull task, id  _Nonnull responseObject) {
-
-                                NSArray *pics = [((NSDictionary *)responseObject) valueForKey:@"pic"];
-                                completionHandler([pics valueForKey:@"linkurl"]);
+                                   if ([responseObject isKindOfClass:[NSDictionary class]]) {
+                                       NSArray *pics = [((NSDictionary *)responseObject) valueForKey:@"pic"];
+                                       completionHandler([pics valueForKey:@"linkurl"],nil);
+                                   }
                                 }
-                               failure:nil];
+                               failure:^(NSURLSessionDataTask * _Nonnull task, NSError * _Nonnull error) {
+                                   completionHandler(nil,error);
+                               }];
 }
 
 -(NSURLSessionDataTask *)fetchImageAtURLString:(NSString *)urlString
-      completionHandle:(void (^)(UIImage * image))completionHandler{
+      completionHandle:(void (^)(UIImage * image,NSError* error))completionHandler{
 
    return [self.HTTPSessionManager GET:urlString
                       parameters:nil
                          success:^(NSURLSessionDataTask * _Nonnull task, id  _Nonnull responseObject) {
-                                completionHandler(responseObject);
+                             NSError * error = nil;
+                             if ([responseObject isKindOfClass:[UIImage class]]) {
+                                 completionHandler(responseObject,error);
+                             }
                             }
-                         failure:nil];
+                         failure:^(NSURLSessionDataTask * _Nonnull task, NSError * _Nonnull error) {
+                             completionHandler(nil,error);
+                         }];
 }
 
 @end

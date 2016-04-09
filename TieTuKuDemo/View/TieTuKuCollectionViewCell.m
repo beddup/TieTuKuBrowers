@@ -46,6 +46,7 @@
 
 -(void)layoutSubviews
 {
+    
     self.imageView.frame = self.bounds;
     self.indicator.center = CGPointMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds));
     self.favoriteButton.center = CGPointMake(CGRectGetMidX(self.bounds), CGRectGetMaxY(self.bounds)-30);
