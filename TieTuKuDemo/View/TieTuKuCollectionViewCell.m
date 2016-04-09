@@ -54,6 +54,7 @@
 
 -(void)prepareForReuse
 {
+    // override it , so the return cell will be in complete new stae
     [super prepareForReuse];
     self.image = nil;
     self.indicator.hidden = NO;

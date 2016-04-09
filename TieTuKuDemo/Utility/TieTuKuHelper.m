@@ -19,25 +19,37 @@
 
 @implementation TieTuKuHelper
 
+
+
 +(instancetype)helper
 {
     return [[[self class] alloc] init];
 }
 
+// 单例
++(instancetype)allocWithZone:(struct _NSZone *)zone{
+    static dispatch_once_t onceToken;
+    static TieTuKuHelper* helper = nil;
+    dispatch_once(&onceToken, ^{
+        if (!helper) {
+            helper = [[super alloc] init];
+        }
+    });
+    return helper;
+}
 -(instancetype)init
 {
+
     self = [super init];
-    if (self)
-    {
+    if (self) {
         _HTTPSessionManager = [[AFHTTPSessionManager alloc]initWithBaseURL:[NSURL URLWithString:@"http://api.tietuku.com/v2/api"]];
 
         // configure the responseSerializer, because the data may be json or image
         AFJSONResponseSerializer *jsonSerializer = [AFJSONResponseSerializer serializerWithReadingOptions:NSJSONReadingAllowFragments];
         AFImageResponseSerializer *imageSerializer = [AFImageResponseSerializer serializer];
-        
+
         AFCompoundResponseSerializer *compoundSerializer = [AFCompoundResponseSerializer compoundSerializerWithResponseSerializers:@[jsonSerializer,imageSerializer]];
         _HTTPSessionManager.responseSerializer = compoundSerializer;
-
     }
     return self;
 }
